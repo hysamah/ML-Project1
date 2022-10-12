@@ -40,3 +40,20 @@ def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
     y_tr = enumerate_labels(y_tr)
     y_te = enumerate_labels(y_te)
     return x_tr, y_tr, x_te, y_te
+
+def split_data(x, y, ratio, seed=1):
+    """split the dataset based on the split ratio."""
+    # set seed
+    np.random.seed(seed)
+    # generate random indices
+    num_row = len(y)
+    indices = np.random.permutation(num_row)
+    index_split = int(np.floor(ratio * num_row))
+    index_tr = indices[: index_split]
+    index_v = indices[index_split:]
+    # create split
+    x_tr = x[index_tr]
+    x_v = x[index_v]
+    y_tr = y[index_tr]
+    y_v = y[index_v]
+    return x_tr, x_v, y_tr, y_v
