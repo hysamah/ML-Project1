@@ -27,8 +27,9 @@ def build_model_data(x, y):
     tx = np.c_[np.ones(num_samples), x]
     return tx, y 
 
-def enumerate_labels(y):
-    y = y.view(np.int32)
+def enumerate_labels(y):  #s = 1, b = 0
+    lables= np.unique(y)
+    y = np.array([i for j in y for i in range(len(lables)) if j == lables[i]])
     return y 
 
 def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
