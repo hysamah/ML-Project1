@@ -74,7 +74,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         w = w - gamma*g
         err = y - tx.dot(w)
         loss = calculate_mse(err) 
-        print("GD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+        #print("GD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
 
     return w, loss
 
@@ -118,7 +118,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
-def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_size = 1):
+def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_size = 1, shuffle = False):
     """The Stochastic Gradient Descent algorithm (SGD).
             
     Args:
@@ -137,11 +137,11 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_
     g, e = compute_stoch_gradient(y, tx, w)
     loss = compute_loss(y, tx, w)
     for n_iter in range(int(max_iters)):
-        for yi, txi in batch_iter(y, tx, batch_size, num_batches=1, shuffle= False):
+        for yi, txi in batch_iter(y, tx, batch_size, num_batches=1, shuffle = shuffle):
             g, e = compute_stoch_gradient(yi, txi, w)
             w = w - gamma*g
             loss = compute_loss(yi, txi, w)
-        print("SGD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+        #print("SGD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
     return w, loss
 
 def sigmoid(t):
