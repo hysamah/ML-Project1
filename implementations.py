@@ -69,6 +69,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD 
     """
     w = initial_w
+    g, e = compute_gradient(y, tx, w)
     loss = calculate_mse(e)
     for n_iter in range(max_iters):
         g, e = compute_gradient(y, tx, w)
@@ -135,6 +136,7 @@ def mean_squared_error_sgd(y, tx, initial_w, batch_size = 1, max_iters = 1, gamm
         ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of SGD 
     """
     w = initial_w
+    g, e = compute_stoch_gradient(yi, txi, w)
     loss = calculate_mse(e)
     for n_iter in range(max_iters):
         for yi, txi in batch_iter(y, tx, batch_size, num_batches=1):
