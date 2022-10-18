@@ -69,6 +69,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD 
     """
     w = initial_w
+    loss = calculate_mse(e)
     for n_iter in range(max_iters):
         g, e = compute_gradient(y, tx, w)
         loss = calculate_mse(e)
@@ -118,7 +119,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
-def mean_squared_error_sgd(y, tx, initial_w, batch_size, max_iters, gamma):
+def mean_squared_error_sgd(y, tx, initial_w, batch_size = 1, max_iters = 1, gamma = 0.01):
     """The Stochastic Gradient Descent algorithm (SGD).
             
     Args:
@@ -134,6 +135,7 @@ def mean_squared_error_sgd(y, tx, initial_w, batch_size, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of SGD 
     """
     w = initial_w
+    loss = calculate_mse(e)
     for n_iter in range(max_iters):
         for yi, txi in batch_iter(y, tx, batch_size, num_batches=1):
             g, e = compute_stoch_gradient(yi, txi, w)
@@ -163,6 +165,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     return weights, loss
     """
     w = initial_w
+    loss = mle_loss(y, tx, w)
     threshold = 1e-6
     for t in range(max_iters):
         loss = mle_loss(y, tx, w)
