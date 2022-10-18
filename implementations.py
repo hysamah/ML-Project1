@@ -120,7 +120,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
-def mean_squared_error_sgd(y, tx, initial_w, batch_size = 1, max_iters = 1, gamma = 0.01):
+def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_size = 1):
     """The Stochastic Gradient Descent algorithm (SGD).
             
     Args:
