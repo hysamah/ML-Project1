@@ -90,10 +90,9 @@ def compute_stoch_gradient(y, tx, w):
     Returns:
         A numpy array of shape (2, ) (same shape as w), containing the stochastic gradient of the loss at w.
     """
-    N = y.shape[0]
-    e = y -np.dot(tx, w)
-    G = -tx.T.dot(e)/N
-    return G, e
+    err = y - tx.dot(w)
+    grad = -tx.T.dot(err) / len(err)
+    return grad, err
 
 def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
     """
@@ -139,7 +138,7 @@ def mean_squared_error_sgd(y, tx, initial_w, batch_size = 1, max_iters = 1, gamm
     g, e = compute_stoch_gradient(y, tx, w)
     loss = calculate_mse(e)
     for n_iter in range(int(max_iters)):
-        for yi, txi in batch_iter(y, tx, batch_size, num_batches=1):
+        for yi, txi in batch_iter(y, tx, batch_size, num_batches=1, shuffle= False):
             g, e = compute_stoch_gradient(yi, txi, w)
             loss = calculate_mse(e)
             w = w - gamma*g
