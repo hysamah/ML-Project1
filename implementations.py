@@ -25,8 +25,7 @@ def compute_loss(y, tx, w, l=0):
     """
     if l == 0:
       #compute loss by MSE
-      e =  np.dot(tx, w)
-      e = y - e
+      e = y - np.dot(tx, w)
       N = y.shape[0]
       L = 1/(2*N) * e.T * e
       return L.sum()
@@ -70,12 +69,11 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     w = initial_w
     g, e = compute_gradient(y, tx, w)
     loss = calculate_mse(e)
-    #loss = compute_loss(y, tx, w)
     for n_iter in range(max_iters):
-        g, e = compute_gradient(y, tx, w)
-        #loss = compute_loss(y, tx, w)
-        loss = calculate_mse(e)
+        g, _ = compute_gradient(y, tx, w)
         w = w - gamma*g
+        err = y - tx.dot(w)
+        loss = calculate_mse(err) 
         print("GD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
 
     return w, loss
