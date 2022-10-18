@@ -29,8 +29,10 @@ def build_model_data(x, y):
 
 def enumerate_labels(y):  #s = 1, b = 0
     lables= np.unique(y)
-    y = np.array([i for j in y for i in range(len(lables)) if j == lables[i]])
-    return y 
+    yb = np.array([i for j in y for i in range(len(lables)) if j == lables[i]])
+    #yb = np.ones(len(y))
+    #yb[np.where(y == "b")] = -1
+    return yb 
 
 def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
     x_tr, y_tr, x_te, y_te = load_data(train_path, test_path)
@@ -58,3 +60,17 @@ def split_data(x, y, ratio, seed=1):
     y_tr = y[index_tr]
     y_v = y[index_v]
     return x_tr, x_v, y_tr, y_v
+
+def create_csv_submission(ids, y_pred, name):
+    """
+    Creates an output file in .csv format for submission to Kaggle or AIcrowd
+    Arguments: ids (event ids associated with each prediction)
+               y_pred (predicted class labels)
+               name (string name of .csv output file to be created)
+    """
+    with open(name, "w") as csvfile:
+        fieldnames = ["Id", "Prediction"]
+        writer = csv.DictWriter(csvfile, delimiter=",", fieldnames=fieldnames)
+        writer.writeheader()
+        for r1, r2 in zip(ids, y_pred):
+            writer.writerow({"Id": int(r1), "Prediction": int(r2)})
