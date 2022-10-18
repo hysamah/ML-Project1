@@ -73,8 +73,8 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     loss = calculate_mse(e)
     for n_iter in range(max_iters):
         g, e = compute_gradient(y, tx, w)
-        w = w - gamma*g
         loss = calculate_mse(e)
+        w = w - gamma*g
         print("GD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
 
     return w, loss
