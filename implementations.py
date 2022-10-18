@@ -51,10 +51,9 @@ def compute_gradient(y, tx, w):
     Returns:
         An numpy array of shape (2, ) (same shape as w), containing the gradient of the loss at w.
     """
-    N = y.shape[0]
-    e = y -np.dot(tx, w)
-    G = -1/N * tx.T.dot(e)
-    return G, e
+    err = y - tx.dot(w)
+    grad = -tx.T.dot(err) / len(err)
+    return grad, err
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """The Gradient Descent (GD) algorithm.
@@ -71,8 +70,10 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     w = initial_w
     g, e = compute_gradient(y, tx, w)
     loss = calculate_mse(e)
+    #loss = compute_loss(y, tx, w)
     for n_iter in range(max_iters):
         g, e = compute_gradient(y, tx, w)
+        #loss = compute_loss(y, tx, w)
         loss = calculate_mse(e)
         w = w - gamma*g
         print("GD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
