@@ -12,9 +12,9 @@ def get_accuracy(grnd_truth, input, weights):
 def calculate_mse(e):
     """Calculate the mse for vector e."""
     return 1/2*np.mean(e**2)
-    
+
 def compute_loss(y, tx, w, l=0):
-    # l = 0 for MSE 
+    # l = 0 for MSE
     """Calculate the loss using either MSE or MAE.
     Args:
         y: numpy array of shape=(N, )
@@ -42,11 +42,11 @@ def generate_w(input_shape):
     return w
 
 def compute_gradient(y, tx, w):
-    """Computes the gradient at w.   
+    """Computes the gradient at w.
     Args:
         y: numpy array of shape=(N, )
         tx: numpy array of shape=(N,2)
-        w: numpy array of shape=(2, ). The vector of model parameters.  
+        w: numpy array of shape=(2, ). The vector of model parameters.
     Returns:
         An numpy array of shape (2, ) (same shape as w), containing the gradient of the loss at w.
     """
@@ -64,7 +64,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         gamma: a scalar denoting the stepsize
     Returns:
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
-        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD 
+        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD
     """
     w = initial_w
     g, e = compute_gradient(y, tx, w)
@@ -73,7 +73,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         g, _ = compute_gradient(y, tx, w)
         w = w - gamma*g
         err = y - tx.dot(w)
-        loss = calculate_mse(err) 
+        loss = calculate_mse(err)
         #print("GD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
 
     return w, loss
@@ -85,7 +85,7 @@ def compute_stoch_gradient(y, tx, w):
         y: numpy array of shape=(N, )
         tx: numpy array of shape=(N,2)
         w: numpy array of shape=(2, ). The vector of model parameters.
-        
+
     Returns:
         A numpy array of shape (2, ) (same shape as w), containing the stochastic gradient of the loss at w.
     """
@@ -120,7 +120,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
 
 def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_size = 1, shuffle = False):
     """The Stochastic Gradient Descent algorithm (SGD).
-            
+
     Args:
         y: numpy array of shape=(N, )
         tx: numpy array of shape=(N,2)
@@ -128,10 +128,10 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_
         batch_size: a scalar denoting the number of data points in a mini-batch used for computing the stochastic gradient
         max_iters: a scalar denoting the total number of iterations of SGD
         gamma: a scalar denoting the stepsize
-        
+
     Returns:
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of SGD
-        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of SGD 
+        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of SGD
     """
     w = initial_w
     g, e = compute_stoch_gradient(y, tx, w)
@@ -188,14 +188,15 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
     loss = mle_loss(y, tx, w)
     return w, loss
+
 def ridge_regression(y, tx, lambda_):
     """implement ridge regression.
-    
+
     Args:
         y: numpy array of shape (N,), N is the number of samples.
         tx: numpy array of shape (N,D), D is the number of features.
         lambda_: scalar.
-    
+
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
 
@@ -217,11 +218,11 @@ def ridge_regression(y, tx, lambda_):
 def least_squares(y, tx):
     """Calculate the least squares solution.
        returns mse, and optimal weights.
-    
+
     Args:
         y: numpy array of shape (N,), N is the number of samples.
         tx: numpy array of shape (N,D), D is the number of features.
-    
+
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
         mse: scalar.
