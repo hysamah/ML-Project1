@@ -80,7 +80,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
 
 def compute_stoch_gradient(y, tx, w):
     """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
-        
+
     Args:
         y: numpy array of shape=(N, )
         tx: numpy array of shape=(N,2)
@@ -145,18 +145,21 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_
     return w, loss
 
 def sigmoid(t):
-    return 1.0 / (1 + np.exp(-t))
+    p = 1.0 / (1 + np.exp(-t))
+    p[p<0.00001] = 0.00001
+    p[p>0.99999] = 0.99999
+    return(p)
 
 def mle_loss(y, tx, w):
     """negative log likelihood."""
     pred = sigmoid(tx.dot(w))
     loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
-    return np.squeeze(- loss)
+    return np.squeeze(- loss / y.shape[0])
 
 def grad(y, tx, w):
     """the gradient of loss"""
     pred = sigmoid(tx.dot(w))
-    grad = tx.T.dot(pred - y)
+    grad = tx.T.dot(pred - y) / y.shape[0]
     return grad
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
@@ -165,12 +168,12 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     return weights, loss
     """
     w = initial_w
-    loss = mle_loss(y, tx, w)
     threshold = 1e-6
+    loss = mle_loss(y, tx, w)
     for t in range(max_iters):
-        loss = mle_loss(y, tx, w)
         gradient = grad(y, tx, w)
         w -= gamma * gradient
+        loss = mle_loss(y, tx, w)
 
     return w, loss
 
@@ -180,10 +183,10 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     return weights, loss
     """
     w = initial_w
-    threshold = 1e-6
+    # threshold = 1e-6
     for t in range(max_iters):
-        loss = mle_loss(y, tx, w) + lambda_ * np.squeeze(w.T.dot(w))
-        gradient = grad(y, tx, w) + 2 * lambda_ * w
+        # loss = mle_loss(y, tx, w) + 0.5 * lambda_ * np.sum(w.T.dot(w))
+        gradient = grad(y, tx, w) + 2.0 * lambda_ * w
         w -= gamma * gradient
 
     loss = mle_loss(y, tx, w)
