@@ -1,13 +1,6 @@
 
 import numpy as np
 
-def get_accuracy(grnd_truth, input, weights):
-        e =  np.dot(input, weights)
-        e = grnd_truth - e
-        N = grnd_truth.shape[0]
-        e = e.round()
-        acc = 1-np.sum(abs(e))/N
-        return acc
 
 def calculate_mse(e):
     """Calculate the mse for vector e."""

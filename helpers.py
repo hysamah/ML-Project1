@@ -1,4 +1,5 @@
 import numpy as np
+import csv
 def load_data(train_path, test_path):
     """load data."""
     max_cols = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, dtype = str, max_rows = 1).shape[0]
@@ -8,10 +9,11 @@ def load_data(train_path, test_path):
     
     y_te = np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True, dtype = str, usecols=(1))
     x_te = np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True,  usecols=n_cols)
+    id_te =  np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True,  usecols=(0))
 
     x_tr = x_tr.T
     x_te = x_te.T
-    return x_tr, y_tr, x_te, y_te
+    return x_tr, y_tr, x_te, y_te, id_te
 
 def standardize(x):
     """Standardize the original data set."""
@@ -35,14 +37,13 @@ def enumerate_labels(y):  #s = 1, b = 0
     return yb 
 
 def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
-    x_tr, y_tr, x_te, y_te = load_data(train_path, test_path)
+    x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
     x_tr = standardize(x_tr)
     x_te = standardize(x_te)
     x_tr, y_tr = build_model_data(x_tr, y_tr)
     x_te, y_te = build_model_data(x_te, y_te)
     y_tr = enumerate_labels(y_tr)
-    y_te = enumerate_labels(y_te)
-    return x_tr, y_tr, x_te, y_te
+    return x_tr, y_tr, x_te, id_te
 
 def split_data(x, y, ratio, seed=1):
     """split the dataset based on the split ratio."""
@@ -61,6 +62,12 @@ def split_data(x, y, ratio, seed=1):
     y_v = y[index_v]
     return x_tr, x_v, y_tr, y_v
 
+def postprocess_preds(y):
+    yb = np.ones(len(y))
+    yb[np.where(y == 0)] = -1
+    return yb
+
+
 def create_csv_submission(ids, y_pred, name):
     """
     Creates an output file in .csv format for submission to Kaggle or AIcrowd
@@ -74,3 +81,17 @@ def create_csv_submission(ids, y_pred, name):
         writer.writeheader()
         for r1, r2 in zip(ids, y_pred):
             writer.writerow({"Id": int(r1), "Prediction": int(r2)})
+
+def get_accuracy(grnd_truth, input, weights):
+        e =  np.dot(input, weights)
+        e = grnd_truth - e
+        N = grnd_truth.shape[0]
+        e = e.round()
+        acc = 1-np.sum(abs(e))/N
+        return acc
+
+def test(id, x, w):
+    p =  np.dot(x, w)
+    p = p.round()
+    p = postprocess_preds(p)
+    return id, p
