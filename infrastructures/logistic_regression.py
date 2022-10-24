@@ -23,7 +23,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     running gradient descent for max_iters iterations (at most)
     return weights, loss
     """
-    w = initial_w
+    w = initial_w.copy()
     threshold = 1e-6
     loss = mle_loss(y, tx, w)
     for t in range(max_iters):
@@ -38,11 +38,12 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     running gradient descent for max_iters iterations (at most)
     return weights, loss
     """
-    w = initial_w
+    w = initial_w.copy()
     # threshold = 1e-6
     for t in range(max_iters):
         # loss = mle_loss(y, tx, w) + 0.5 * lambda_ * np.sum(w.T.dot(w))
         gradient = grad(y, tx, w) + 2.0 * lambda_ * w
+        # print(y, tx, w, grad(y, tx, w))
         w -= gamma * gradient
 
     loss = mle_loss(y, tx, w)

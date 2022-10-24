@@ -43,7 +43,6 @@ def test_logistic_regression_0_step(y, tx):
 
 test_logistic_regression_0_step(y, tx)
 
-
 def test_logistic_regression(y, tx, initial_w):
     y = (y > 0.2) * 1.0
     w, loss = logistic_regression(
@@ -57,7 +56,6 @@ def test_logistic_regression(y, tx, initial_w):
     np.testing.assert_allclose(w, expected_w, rtol=RTOL, atol=ATOL)
     assert loss.ndim == 0
     assert w.shape == expected_w.shape
-
 test_logistic_regression(y, tx, initial_w)
 
 
@@ -68,8 +66,6 @@ def test_reg_logistic_regression(y, tx, initial_w):
         y, tx, lambda_, initial_w, MAX_ITERS, GAMMA
     )
 
-    print(w, loss)
-
     expected_loss = 0.972165
     expected_w = np.array([[0.216062], [0.467747]])
 
@@ -78,7 +74,7 @@ def test_reg_logistic_regression(y, tx, initial_w):
     assert loss.ndim == 0
     assert w.shape == expected_w.shape
 
-# test_reg_logistic_regression(y, tx, initial_w)
+test_reg_logistic_regression(y, tx, initial_w)
 
 def test_reg_logistic_regression_0_step(y, tx):
     lambda_ = 1.0
@@ -96,7 +92,3 @@ def test_reg_logistic_regression_0_step(y, tx):
     assert w.shape == expected_w.shape
 
 test_reg_logistic_regression_0_step(y, tx)
-
-print(reg_logistic_regression(
-    y, tx, 9, np.array([[0.409111], [0.843996]]), 1000, GAMMA
-))
