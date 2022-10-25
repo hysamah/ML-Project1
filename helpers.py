@@ -1,5 +1,7 @@
 import numpy as np
 import csv
+from math import sqrt
+
 def load_data(train_path, test_path):
     """load data."""
     max_cols = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, dtype = str, max_rows = 1).shape[0]
@@ -36,10 +38,39 @@ def enumerate_labels(y):  #s = 1, b = 0
     #yb[np.where(y == "b")] = -1
     return yb 
 
+def remove_outliers(x, y):
+    q75,q25 = np.percentile(x, [75,25], axis = 0)
+    intr_qr = q75-q25
+    maxn = q75+(1.5*intr_qr)
+    min = q25-(1.5*intr_qr)
+    z = np.where(x>min, x, min)
+    z = np.where(z<maxn, z, maxn)
+    # z = np.where(x>min, x, np.nan)
+    # z = np.where(z<maxn, z, np.nan)
+    y = y[~np.isnan(z).any(axis = 1)]
+    z = z[~np.isnan(z).any(axis = 1)]
+    return z, y
+
+def generate_w(input_shape, seed = 1):
+    n = input_shape[0]
+    std = sqrt(2.0 / n)
+    np.random.seed(seed)
+    w = np.random.randn(input_shape[1])
+    w = w * std
+    #w = np.zeros(input_shape[1])
+    return w
+
+def log_scale(x):
+    x = x + abs(np.min(x)) +0.00000001
+    return np.log(x)
+
 def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
     x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
+    x_tr, y_tr = remove_outliers(x_tr, y_tr)
     x_tr = standardize(x_tr)
+    #x_tr = log_scale(x_tr)
     x_te = standardize(x_te)
+    #x_te = log_scale(x_te)
     x_tr, y_tr = build_model_data(x_tr, y_tr)
     x_te, y_te = build_model_data(x_te, y_te)
     y_tr = enumerate_labels(y_tr)

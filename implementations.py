@@ -30,9 +30,7 @@ def compute_loss(y, tx, w, l=0):
       L = 1/(2*N) * e
       return L.sum()
 
-def generate_w(input_shape):
-    w = np.zeros(input_shape[1])
-    return w
+
 
 def compute_gradient(y, tx, w):
     """Computes the gradient at w.
