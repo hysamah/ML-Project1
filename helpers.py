@@ -64,13 +64,38 @@ def log_scale(x):
     x = x + abs(np.min(x)) +0.00000001
     return np.log(x)
 
+def PCA(x_tr):
+    z = np.dot(x_tr.T, x_tr)
+    eigenvalues, eigenvectors = np.linalg.eig(z)
+    D = np.diag(eigenvalues)
+    P = eigenvectors
+    z_new = np.dot(z, P)
+    x_new = np.dot(x_tr, P[:29].T)
+    return x_new
+
 def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
     x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
     x_tr, y_tr = remove_outliers(x_tr, y_tr)
     x_tr = standardize(x_tr)
-    #x_tr = log_scale(x_tr)
+    x_tr = log_scale(x_tr)
     x_te = standardize(x_te)
-    #x_te = log_scale(x_te)
+    x_te = log_scale(x_te)
+    #x_tr = PCA(x_tr)
+    #x_te = PCA(x_te)
+    x_tr, y_tr = build_model_data(x_tr, y_tr)
+    x_te, y_te = build_model_data(x_te, y_te)
+    y_tr = enumerate_labels(y_tr)
+    return x_tr, y_tr, x_te, id_te
+
+def preprocess_data_logscale(train_path = "../train.csv", test_path = "../test.csv"):
+    x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
+    x_tr, y_tr = remove_outliers(x_tr, y_tr)
+    x_tr = standardize(x_tr)
+    x_tr = log_scale(x_tr)
+    x_te = standardize(x_te)
+    x_te = log_scale(x_te)
+    #x_tr = PCA(x_tr)
+    #x_te = PCA(x_te)
     x_tr, y_tr = build_model_data(x_tr, y_tr)
     x_te, y_te = build_model_data(x_te, y_te)
     y_tr = enumerate_labels(y_tr)

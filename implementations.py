@@ -69,6 +69,35 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
 
     return w, loss
 
+def mean_squared_error_gd_es(y, tx, initial_w, max_iters, gamma):
+    """The Gradient Descent (GD) algorithm. this function implements early stopping to return the best weights not the last ones
+    Args:
+        y: numpy array of shape=(N, )
+        tx: numpy array of shape=(N,2)
+        initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of GD
+        gamma: a scalar denoting the stepsize
+    Returns:
+        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
+        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD
+    """
+    w = initial_w
+    g, e = compute_gradient(y, tx, w)
+    loss = calculate_mse(e)
+    best_loss = 10e25
+    best_w = initial_w
+    for n_iter in range(max_iters):
+        g, _ = compute_gradient(y, tx, w)
+        w = w - gamma*g
+        err = y - tx.dot(w)
+        loss = calculate_mse(err)
+        best_w = (w if loss < best_loss else best_w)
+        best_loss = (loss if loss < best_loss else best_loss)
+        
+        #print("GD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+
+    return best_w, best_loss
+
 def compute_stoch_gradient(y, tx, w):
     """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
 
@@ -134,6 +163,8 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_
             loss = compute_loss(yi, txi, w)
         #print("SGD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
     return w, loss
+
+
 
 def sigmoid(t):
     p = 1.0 / (1 + np.exp(-t))
