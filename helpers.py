@@ -144,6 +144,14 @@ def get_accuracy(grnd_truth, pred):
         acc = 1 - np.mean(np.abs(e))
         return acc
 
+def predict_logistic(input, w):
+    pred = input.dot(w) > 0
+    return pred
+
+def predict_mse(input, w):
+    pred = input.dot(w)>0.5
+    return pred
+
 
 def test(id, x, w):
     p =  np.dot(x, w)
