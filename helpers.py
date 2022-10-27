@@ -1,6 +1,7 @@
 import numpy as np
 import csv
 from math import sqrt
+from implementations import sigmoid
 
 def load_data(train_path, test_path):
     """load data."""
@@ -8,7 +9,7 @@ def load_data(train_path, test_path):
     n_cols = tuple(i for i in range(2,max_cols,1)) #creating a tuple for the number of colums to be used in loadtxt
     y_tr = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, dtype = str, usecols=(1))
     x_tr = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, usecols=n_cols)
-    
+
     y_te = np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True, dtype = str, usecols=(1))
     x_te = np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True,  usecols=n_cols)
     id_te =  np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True,  usecols=(0))
@@ -29,14 +30,14 @@ def build_model_data(x, y):
     """Form (y,tX) to get regression data in matrix form."""
     num_samples = len(y)
     tx = np.c_[np.ones(num_samples), x]
-    return tx, y 
+    return tx, y
 
 def enumerate_labels(y):  #s = 1, b = 0
-    lables= np.unique(y)
-    yb = np.array([i for j in y for i in range(len(lables)) if j == lables[i]])
-    #yb = np.ones(len(y))
-    #yb[np.where(y == "b")] = -1
-    return yb 
+    # lables= np.unique(y)
+    # yb = np.array([i for j in y for i in range(len(lables)) if j == lables[i]])
+    yb = np.ones(len(y))
+    yb[np.where(y == "b")] = 0
+    return yb
 
 def remove_outliers(x, y):
     q75,q25 = np.percentile(x, [75,25], axis = 0)
@@ -51,7 +52,7 @@ def remove_outliers(x, y):
     z = z[~np.isnan(z).any(axis = 1)]
     return z, y
 
-def generate_w(input_shape, seed = 1):
+def generate_w(input_shape, seed = 42):
     n = input_shape[0]
     std = sqrt(2.0 / n)
     np.random.seed(seed)
@@ -77,9 +78,9 @@ def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
     x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
     x_tr, y_tr = remove_outliers(x_tr, y_tr)
     x_tr = standardize(x_tr)
-    x_tr = log_scale(x_tr)
+    # x_tr = log_scale(x_tr)
     x_te = standardize(x_te)
-    x_te = log_scale(x_te)
+    # x_te = log_scale(x_te)
     #x_tr = PCA(x_tr)
     #x_te = PCA(x_te)
     x_tr, y_tr = build_model_data(x_tr, y_tr)
@@ -138,13 +139,11 @@ def create_csv_submission(ids, y_pred, name):
         for r1, r2 in zip(ids, y_pred):
             writer.writerow({"Id": int(r1), "Prediction": int(r2)})
 
-def get_accuracy(grnd_truth, input, weights):
-        e =  np.dot(input, weights)
-        e = grnd_truth - e
-        N = grnd_truth.shape[0]
-        e = e.round()
-        acc = 1-np.sum(abs(e))/N
+def get_accuracy(grnd_truth, pred):
+        e = grnd_truth - pred
+        acc = 1 - np.mean(np.abs(e))
         return acc
+
 
 def test(id, x, w):
     p =  np.dot(x, w)
