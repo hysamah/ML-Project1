@@ -1,9 +1,8 @@
 import numpy as np
 import csv
 from math import sqrt
-from implementations import sigmoid
 
-def load_data(train_path, test_path):
+def load_data(train_path = "../train.csv", test_path = "../test.csv"):
     """load data."""
     max_cols = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, dtype = str, max_rows = 1).shape[0]
     n_cols = tuple(i for i in range(2,max_cols,1)) #creating a tuple for the number of colums to be used in loadtxt
@@ -39,18 +38,6 @@ def enumerate_labels(y):  #s = 1, b = 0
     yb[np.where(y == "b")] = 0
     return yb
 
-def remove_outliers(x, y):
-    q75,q25 = np.percentile(x, [75,25], axis = 0)
-    intr_qr = q75-q25
-    maxn = q75+(1.5*intr_qr)
-    min = q25-(1.5*intr_qr)
-    z = np.where(x>min, x, min)
-    z = np.where(z<maxn, z, maxn)
-    # z = np.where(x>min, x, np.nan)
-    # z = np.where(z<maxn, z, np.nan)
-    y = y[~np.isnan(z).any(axis = 1)]
-    z = z[~np.isnan(z).any(axis = 1)]
-    return z, y
 
 def generate_w(input_shape, seed = 42):
     n = input_shape[0]
@@ -74,8 +61,29 @@ def PCA(x_tr):
     x_new = np.dot(x_tr, P[:29].T)
     return x_new
 
+def replace_missing(x):
+    ##replacing the missing data that is -999 with the mean of each column
+    mean_x = np.mean(x!=-999, axis = 0)
+    std_x = np.std(x!=-999, axis = 0)
+    inds = np.where(x == -999 )
+    x[inds] = np.take(np.random.normal(mean_x, std_x), inds[1])
+    return x
+
+def remove_outliers(x, y, max_tol = 1.5, min_tol = 1.5):
+    inds = np.array([i for i in range(x.shape[1]) if (i != 4) and (i != 6) and (i != 28) and (i != 27) and (i!=12) ])
+    q75,q25 = np.percentile(x[:,  inds], [75,25], axis = 0)
+    intr_qr = q75-q25
+    maxn = q75+(max_tol*intr_qr)
+    min = q25-(min_tol*intr_qr)
+    z = np.where(x[:,  inds]>min, x[:,  inds], min)
+    z = np.where(z<maxn, z, maxn)
+    x[: , inds] = z
+    return x, y
+
 def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
     x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
+    x_tr = replace_missing(x_tr)
+    x_te = replace_missing(x_te)
     x_tr, y_tr = remove_outliers(x_tr, y_tr)
     x_tr = standardize(x_tr)
     # x_tr = log_scale(x_tr)
@@ -90,6 +98,8 @@ def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
 
 def preprocess_data_logscale(train_path = "../train.csv", test_path = "../test.csv"):
     x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
+    x_tr = replace_missing(x_tr)
+    x_te = replace_missing(x_te)
     x_tr, y_tr = remove_outliers(x_tr, y_tr)
     x_tr = standardize(x_tr)
     x_tr = log_scale(x_tr)
@@ -158,3 +168,28 @@ def test(id, x, w):
     p = p.round()
     p = postprocess_preds(p)
     return id, p
+
+def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
+    """
+    Generate a minibatch iterator for a dataset.
+    Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
+    Outputs an iterator which gives mini-batches of `batch_size` matching elements from `y` and `tx`.
+    Data can be randomly shuffled to avoid ordering in the original data messing with the randomness of the minibatches.
+    Example of use :
+    for minibatch_y, minibatch_tx in batch_iter(y, tx, 32):
+        <DO-SOMETHING>
+    """
+    data_size = len(y)
+
+    if shuffle:
+        shuffle_indices = np.random.permutation(np.arange(data_size))
+        shuffled_y = y[shuffle_indices]
+        shuffled_tx = tx[shuffle_indices]
+    else:
+        shuffled_y = y
+        shuffled_tx = tx
+    for batch_num in range(num_batches):
+        start_index = batch_num * batch_size
+        end_index = min((batch_num + 1) * batch_size, data_size)
+        if start_index != end_index:
+            yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]

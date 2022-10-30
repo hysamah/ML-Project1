@@ -1,4 +1,4 @@
-
+from helpers import *
 import numpy as np
 
 
@@ -100,7 +100,6 @@ def mean_squared_error_gd_es(y, tx, initial_w, max_iters, gamma):
 
 def compute_stoch_gradient(y, tx, w):
     """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
-
     Args:
         y: numpy array of shape=(N, )
         tx: numpy array of shape=(N,2)
@@ -112,31 +111,6 @@ def compute_stoch_gradient(y, tx, w):
     err = y - tx.dot(w)
     grad = -tx.T.dot(err) / len(err)
     return grad, err
-
-def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
-    """
-    Generate a minibatch iterator for a dataset.
-    Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
-    Outputs an iterator which gives mini-batches of `batch_size` matching elements from `y` and `tx`.
-    Data can be randomly shuffled to avoid ordering in the original data messing with the randomness of the minibatches.
-    Example of use :
-    for minibatch_y, minibatch_tx in batch_iter(y, tx, 32):
-        <DO-SOMETHING>
-    """
-    data_size = len(y)
-
-    if shuffle:
-        shuffle_indices = np.random.permutation(np.arange(data_size))
-        shuffled_y = y[shuffle_indices]
-        shuffled_tx = tx[shuffle_indices]
-    else:
-        shuffled_y = y
-        shuffled_tx = tx
-    for batch_num in range(num_batches):
-        start_index = batch_num * batch_size
-        end_index = min((batch_num + 1) * batch_size, data_size)
-        if start_index != end_index:
-            yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
 def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_size = 1, shuffle = False):
     """The Stochastic Gradient Descent algorithm (SGD).
@@ -164,8 +138,6 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters = 1, gamma = 0.01, batch_
         #print("SGD iter. {bi}/{ti}: loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
     return w, loss
 
-
-
 def sigmoid(t):
     p = 1.0 / (1 + np.exp(-t))
     p[p<0.00001] = 0.00001
@@ -179,7 +151,7 @@ def mle_loss(y, tx, w):
     return np.squeeze(- loss / y.shape[0])
 
 def grad(y, tx, w):
-    """the gradient of loss"""
+    """the gradient of loss for logisteic regression"""
     pred = sigmoid(tx.dot(w))
     grad = tx.T.dot(pred - y) / y.shape[0]
     return grad
@@ -225,11 +197,7 @@ def ridge_regression(y, tx, lambda_):
 
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
-
-    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 0)
-    array([ 0.21212121, -0.12121212])
-    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 1)
-    array([0.03947092, 0.00319628])
+        mse: scalar, mean square error loss for the final weights
     """
     d = tx.shape[1]
     n = tx.shape[0]
@@ -251,10 +219,8 @@ def least_squares(y, tx):
 
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
-        mse: scalar.
+        mse: scalar, mean square error loss for the final weights
 
-    >>> least_squares(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]))
-    (array([ 0.21212121, -0.12121212]), 8.666684749742561e-33)
     """
     w = np.linalg.solve(tx.T @ tx, tx.T @ y)
     e = y - (tx @ w)
