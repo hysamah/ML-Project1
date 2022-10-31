@@ -3,7 +3,7 @@ import csv
 from math import sqrt
 
 def load_data(train_path = "../train.csv", test_path = "../test.csv"):
-    """load data."""
+    """load the training and testing data and labels from the csv files ."""
     max_cols = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, dtype = str, max_rows = 1).shape[0]
     n_cols = tuple(i for i in range(2,max_cols,1)) #creating a tuple for the number of colums to be used in loadtxt
     y_tr = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, dtype = str, usecols=(1))
@@ -17,8 +17,23 @@ def load_data(train_path = "../train.csv", test_path = "../test.csv"):
     x_te = x_te.T
     return x_tr, y_tr, x_te, y_te, id_te
 
+def load_data_(train_path = "../train.csv", test_path = "../test.csv"):
+    """load data."""
+    max_cols = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, dtype = str, max_rows = 1).shape[0]
+    n_cols = tuple(i for i in range(2,max_cols,1)) #creating a tuple for the number of colums to be used in loadtxt
+    y_tr = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, dtype = str, usecols=(1))
+    x_tr = np.loadtxt(train_path, delimiter=",", skiprows=1, unpack=True, usecols=n_cols)
+
+    #y_te = np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True, dtype = str, usecols=(1))
+    #x_te = np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True,  usecols=n_cols)
+    #id_te =  np.loadtxt(test_path, delimiter=",", skiprows=1, unpack=True,  usecols=(0))
+
+    x_tr = x_tr.T
+    #x_te = x_te.T
+    return x_tr, y_tr 
+
 def standardize(x):
-    """Standardize the original data set."""
+    """Standardize (normalize) the original data set to have and mean of 0 and std of 1."""
     mean_x = np.mean(x, axis = 0)
     x = x - mean_x
     std_x = np.std(x, axis = 0)
@@ -32,23 +47,23 @@ def build_model_data(x, y):
     return tx, y
 
 def enumerate_labels(y):  #s = 1, b = 0
-    # lables= np.unique(y)
-    # yb = np.array([i for j in y for i in range(len(lables)) if j == lables[i]])
+    """ converting labels from s & b to zero and one"""
     yb = np.ones(len(y))
     yb[np.where(y == "b")] = 0
     return yb
 
 
 def generate_w(input_shape, seed = 42):
+    """generating random starting weights with a fixed seed"""
     n = input_shape[0]
     std = sqrt(2.0 / n)
     np.random.seed(seed)
     w = np.random.randn(input_shape[1])
     w = w * std
-    #w = np.zeros(input_shape[1])
     return w
 
 def log_scale(x):
+    "Transforming the data into logscale, please note that we shift the data by a constant value first to be all positive"
     x = x + abs(np.min(x)) +0.00000001
     return np.log(x)
 
@@ -62,14 +77,15 @@ def PCA(x_tr):
     return x_new
 
 def replace_missing(x):
-    ##replacing the missing data that is -999 with the mean of each column
-    mean_x = np.mean(x!=-999, axis = 0)
-    std_x = np.std(x!=-999, axis = 0)
+    """replacing the missing data that is -999 with the mean of each column"""""
+    mean_x = np.mean(x>=-999, axis = 0)
+    std_x = np.std(x>=-999, axis = 0)
     inds = np.where(x == -999 )
     x[inds] = np.take(np.random.normal(mean_x, std_x), inds[1])
     return x
 
-def remove_outliers(x, y, max_tol = 1.5, min_tol = 1.5):
+def remove_outliers(x, y, max_tol = 1.2, min_tol = 1.2):
+    """replacing the outliers of datapoints with a maximum and minmum boundary"""
     inds = np.array([i for i in range(x.shape[1]) if (i != 4) and (i != 6) and (i != 28) and (i != 27) and (i!=12) ])
     q75,q25 = np.percentile(x[:,  inds], [75,25], axis = 0)
     intr_qr = q75-q25
@@ -80,7 +96,26 @@ def remove_outliers(x, y, max_tol = 1.5, min_tol = 1.5):
     x[: , inds] = z
     return x, y
 
-def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
+def remove_outliers_(x, y, max_tol = 1.2, min_tol = 1.2):
+    """replacing the outliers of datapoints with a maximum and minmum boundary"""
+    #inds = np.array([i for i in range(x.shape[1]) if (i != 4) and (i != 6) and (i != 28) and (i != 27) and (i!=12) ])
+    #q75,q25 = np.percentile(x[:,  inds], [75,25], axis = 0)
+    q75,q25 = np.percentile(x, [75,25], axis = 0)
+    intr_qr = q75-q25
+    maxn = q75+(max_tol*intr_qr)
+    min = q25-(min_tol*intr_qr)
+    z = np.where(x>min, x, min)
+    z = np.where(z<maxn, z, maxn)
+    #x[: , inds] = z
+    return z, y
+
+def build_poly(x, degree):
+    phi_x = np.zeros((len(x), degree*x.shape[1]))
+    for b in range(degree):
+        phi_x[:, (b)*x.shape[1]: (b+1)*x.shape[1]] = (x ** (b+1))
+    return phi_x
+
+def preprocess_data_nolog(train_path = "../train.csv", test_path = "../test.csv"):
     x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
     x_tr = replace_missing(x_tr)
     x_te = replace_missing(x_te)
@@ -96,17 +131,31 @@ def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
     y_tr = enumerate_labels(y_tr)
     return x_tr, y_tr, x_te, id_te
 
-def preprocess_data_logscale(train_path = "../train.csv", test_path = "../test.csv"):
+def preprocess_data(train_path = "../train.csv", test_path = "../test.csv"):
+    """applying all the preprocessing methods"""
     x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
     x_tr = replace_missing(x_tr)
     x_te = replace_missing(x_te)
     x_tr, y_tr = remove_outliers(x_tr, y_tr)
+    x_te, y_te = remove_outliers(x_te, y_te)
     x_tr = standardize(x_tr)
     x_tr = log_scale(x_tr)
     x_te = standardize(x_te)
     x_te = log_scale(x_te)
-    #x_tr = PCA(x_tr)
-    #x_te = PCA(x_te)
+    x_tr, y_tr = build_model_data(x_tr, y_tr)
+    x_te, y_te = build_model_data(x_te, y_te)
+    y_tr = enumerate_labels(y_tr)
+    return x_tr, y_tr, x_te, id_te
+
+def preprocess_data_final(train_path = "../train.csv", test_path = "../test.csv"):
+    """applying all the preprocessing methods"""
+    x_tr, y_tr, x_te, y_te, id_te = load_data(train_path, test_path)
+    x_tr, y_tr = remove_outliers_(x_tr, y_tr)
+    x_te, y_te = remove_outliers_(x_te, y_te)
+    x_tr = standardize(x_tr)
+    x_tr = log_scale(x_tr)
+    x_te = standardize(x_te)
+    x_te = log_scale(x_te)
     x_tr, y_tr = build_model_data(x_tr, y_tr)
     x_te, y_te = build_model_data(x_te, y_te)
     y_tr = enumerate_labels(y_tr)
@@ -150,6 +199,7 @@ def create_csv_submission(ids, y_pred, name):
             writer.writerow({"Id": int(r1), "Prediction": int(r2)})
 
 def get_accuracy(grnd_truth, pred):
+        """calculating the accuracy from predictions"""
         e = grnd_truth - pred
         acc = 1 - np.mean(np.abs(e))
         return acc
